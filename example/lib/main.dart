@@ -98,9 +98,45 @@ class _ShareExampleScreenState extends State<ShareExampleScreen> {
             ElevatedButton(onPressed: _shareToInstagram, child: const Text('Share to Instagram')),
             ElevatedButton(onPressed: _shareToFacebook, child: const Text('Share to Facebook')),
             ElevatedButton(onPressed: _shareToWhatsApp, child: const Text('Share to WhatsApp')),
+            ElevatedButton(
+              onPressed: _checkInstalledApps,
+              child: const Text('Check Installed Apps'),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _checkInstalledApps() async {
+    try {
+      final installedApps = await socialSharePlugin.checkInstalledApps();
+      final isInstagramInstalled = await socialSharePlugin.isAppInstalled(
+        SocialSharePlatformType.instagram,
+      );
+
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text("Installed Apps"),
+              content: Text(
+                SocialSharePlatformType.values
+                    .map((platform) {
+                      final name =
+                          platform.name[0].toUpperCase() + platform.name.substring(1); // Capitalize
+                      final isInstalled = installedApps[platform.name] ?? false;
+                      return '$name: ${isInstalled ? 'Installed' : 'Not Installed'}';
+                    })
+                    .join('\n'),
+              ),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("OK")),
+              ],
+            ),
+      );
+    } catch (e) {
+      debugPrint("Error checking installed apps: $e");
+    }
   }
 }

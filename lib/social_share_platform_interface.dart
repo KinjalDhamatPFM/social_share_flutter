@@ -31,4 +31,8 @@ abstract class SocialSharePlatform extends PlatformInterface {
   Future<void> shareToWhatsApp({required String text, String? imagePath}) {
     throw UnimplementedError('shareToWhatsApp() has not been implemented.');
   }
+
+  Future<Map<String, bool>> checkInstalledApps() {
+    throw UnimplementedError('checkInstalledApps() has not been implemented.');
+  }
 }

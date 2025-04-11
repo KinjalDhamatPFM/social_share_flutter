@@ -37,4 +37,9 @@ class SocialShareWeb extends SocialSharePlatform {
   Future<void> shareToWhatsApp({required String text, String? imagePath}) async {
     throw ('shareToWhatsApp is not supported on web');
   }
+
+  @override
+  Future<Map<String, bool>> checkInstalledApps() async {
+    throw ('checkInstalledApps is not supported on web');
+  }
 }

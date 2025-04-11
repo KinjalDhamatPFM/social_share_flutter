@@ -2,7 +2,9 @@ package com.example.social_share
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
@@ -12,6 +14,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+
 
 class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware {
 
@@ -49,6 +52,9 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
         Log.d("SocialSharePlugin", "Method called: ${call.method}")
 
         when (call.method) {
+
+            "checkInstalledApps" -> checkInstalledApps(result)
+
             "shareToInstagram" -> {
                 val imagePath = call.argument<String>("imagePath")
                 val text = call.argument<String>("text")
@@ -149,5 +155,28 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
         } catch (e: ActivityNotFoundException) {
             result.error("APP_NOT_FOUND", "WhatsApp not installed", null)
         }
+    }
+
+    fun checkInstalledApps(result: MethodChannel.Result) {
+        val packageManager = activity!!.packageManager
+
+        val apps = mapOf(
+            "whatsapp" to "com.whatsapp",
+            "facebook" to "com.facebook.katana",
+            "instagram" to "com.instagram.android"
+        )
+
+        val installedStatus = mutableMapOf<String, Boolean>()
+
+        for ((key, packageName) in apps) {
+            try {
+                packageManager.getPackageInfo(packageName, 0)
+                installedStatus[key] = true
+            } catch (e: PackageManager.NameNotFoundException) {
+                installedStatus[key] = false
+            }
+        }
+
+        result.success(installedStatus)
     }
 }

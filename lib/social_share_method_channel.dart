@@ -40,4 +40,10 @@ class MethodChannelSocialShare extends SocialSharePlatform {
       if (imagePath != null) 'imagePath': imagePath,
     });
   }
+
+  @override
+  Future<Map<String, bool>> checkInstalledApps() async {
+    final result = await methodChannel.invokeMethod<Map>('checkInstalledApps');
+    return Map<String, bool>.from(result ?? {});
+  }
 }

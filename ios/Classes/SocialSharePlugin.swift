@@ -9,25 +9,35 @@ public class SocialSharePlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    guard let args = call.arguments as? [String: Any] else {
-      result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
-      return
-    }
-
     switch call.method {
+    case "checkInstalledApps":
+      checkInstalledApps(result: result)
+
     case "shareToInstagram":
+      guard let args = call.arguments as? [String: Any] else {
+        result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
+        return
+      }
       let imagePath = args["imagePath"] as? String
       let text = args["text"] as? String
       let appId = args["appId"] as? String
       shareToInstagram(imagePath: imagePath, text: text, appId: appId, result: result)
 
     case "shareToFacebook":
+      guard let args = call.arguments as? [String: Any] else {
+        result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
+        return
+      }
       let imagePath = args["imagePath"] as? String
       let text = args["text"] as? String
       let appId = args["appId"] as? String
       shareToFacebook(imagePath: imagePath, text: text, appId: appId, result: result)
 
     case "shareToWhatsApp":
+      guard let args = call.arguments as? [String: Any] else {
+        result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
+        return
+      }
       let text = args["text"] as? String ?? ""
       let imagePath = args["imagePath"] as? String
       shareToWhatsApp(text: text, imagePath: imagePath, result: result)
@@ -112,17 +122,37 @@ public class SocialSharePlugin: NSObject, FlutterPlugin {
   }
 
   private func shareToWhatsApp(text: String, imagePath: String?, result: @escaping FlutterResult) {
-      let urlString = "whatsapp://send?text=\(text)"
+    let urlString = "whatsapp://send?text=\(text)"
 
-      if let encodedURLString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-         let whatsappURL = URL(string: encodedURLString),
-         UIApplication.shared.canOpenURL(whatsappURL) {
+    if let encodedURLString = urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+       let whatsappURL = URL(string: encodedURLString),
+       UIApplication.shared.canOpenURL(whatsappURL) {
 
-          UIApplication.shared.open(whatsappURL, options: [:], completionHandler: nil)
-          result("success")
+      UIApplication.shared.open(whatsappURL, options: [:], completionHandler: nil)
+      result("success")
 
-      } else {
-          result(FlutterError(code: "APP_NOT_AVAILABLE", message: "WhatsApp not available", details: nil))
-      }
+    } else {
+      result(FlutterError(code: "APP_NOT_AVAILABLE", message: "WhatsApp not available", details: nil))
+    }
+  }
+
+  private func checkInstalledApps(result: @escaping FlutterResult) {
+   let apps = [
+       "instagram": "instagram-stories://",
+       "facebook": "facebook-stories://",
+       "whatsapp": "whatsapp://"
+            ]
+
+     var installedStatus: [String: Bool] = [:]
+
+     for (key, scheme) in apps {
+       if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
+         installedStatus[key] = true
+       } else {
+         installedStatus[key] = false
+       }
+     }
+
+     result(installedStatus)
   }
 }

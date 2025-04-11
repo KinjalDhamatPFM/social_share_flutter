@@ -31,6 +31,7 @@
 		<string>whatsapp</string>
 		<string>instagram-stories</string>
 		<string>facebook-stories</string>
+		<string>fb</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
