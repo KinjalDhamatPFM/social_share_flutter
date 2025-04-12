@@ -48,41 +48,50 @@ public class SocialSharePlugin: NSObject, FlutterPlugin {
   }
 
   private func shareToInstagram(imagePath: String?, text: String?, appId: String?, result: @escaping FlutterResult) {
-    guard let path = imagePath,
-          let image = UIImage(contentsOfFile: path),
-          let appId = appId else {
-      result(FlutterError(code: "INVALID_DATA", message: "Image path or App ID missing", details: nil))
-      return
-    }
-
-    guard let urlScheme = URL(string: "instagram-stories://share") else {
-      result(FlutterError(code: "SCHEME_ERROR", message: "Cannot form Instagram URL scheme", details: nil))
-      return
-    }
-
-    if UIApplication.shared.canOpenURL(urlScheme) {
-      guard let imageData = image.pngData() else {
-        result(FlutterError(code: "DATA_ERROR", message: "Image data invalid", details: nil))
-        return
+      guard let path = imagePath,
+            let appId = appId else {
+          result(FlutterError(code: "INVALID_DATA", message: "Image path or App ID missing", details: nil))
+          return
       }
 
-      let pasteboardItems: [String: Any] = [
-        "com.instagram.sharedSticker.backgroundImage": imageData,
-        "com.instagram.sharedSticker.contentURL": text ?? "",
-        "com.instagram.sharedSticker.appID": appId
-      ]
+      let urlScheme = URL(string: "instagram-stories://share?source_application=\(appId)")!
 
-      let pasteboardOptions = [
-        UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(300)
-      ]
+      guard UIApplication.shared.canOpenURL(urlScheme) else {
+          result(FlutterError(code: "APP_NOT_INSTALLED", message: "Instagram not installed", details: nil))
+          return
+      }
 
-      UIPasteboard.general.setItems([pasteboardItems], options: pasteboardOptions)
-      UIApplication.shared.open(urlScheme, options: [:], completionHandler: nil)
-      result(nil)
-    } else {
-      result(FlutterError(code: "APP_NOT_INSTALLED", message: "Instagram not installed", details: nil))
-    }
+      let fileManager = FileManager.default
+      let imageURL = URL(fileURLWithPath: path)
+      guard fileManager.fileExists(atPath: imageURL.path) else {
+          result(FlutterError(code: "FILE_NOT_FOUND", message: "Image file not found at path", details: nil))
+          return
+      }
+
+      do {
+          let imageData = try Data(contentsOf: imageURL)
+          var pasteboardItems: [String: Any] = [
+              "com.instagram.sharedSticker.stickerImage": imageData,
+              "com.instagram.sharedSticker.backgroundTopColor": "#636e72",
+              "com.instagram.sharedSticker.backgroundBottomColor": "#b2bec3"
+          ]
+
+          if let contentUrl = text {
+              pasteboardItems["com.instagram.sharedSticker.contentURL"] = contentUrl
+          }
+
+          let pasteboardOptions = [
+              UIPasteboard.OptionsKey.expirationDate: Date().addingTimeInterval(300)
+          ]
+
+          UIPasteboard.general.setItems([pasteboardItems], options: pasteboardOptions)
+          UIApplication.shared.open(urlScheme, options: [:], completionHandler: nil)
+          result(nil)
+      } catch {
+          result(FlutterError(code: "DATA_ERROR", message: "Failed to load image data: \(error.localizedDescription)", details: nil))
+      }
   }
+
 
   private func shareToFacebook(imagePath: String?, text: String?, appId: String?, result: @escaping FlutterResult) {
     guard let path = imagePath,
