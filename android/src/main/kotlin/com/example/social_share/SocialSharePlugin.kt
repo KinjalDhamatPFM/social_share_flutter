@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
 import androidx.core.content.FileProvider
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -49,8 +48,6 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        Log.d("SocialSharePlugin", "Method called: ${call.method}")
-
         when (call.method) {
 
             "checkInstalledApps" -> checkInstalledApps(result)
@@ -96,7 +93,7 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
 
         val imageUri: Uri = FileProvider.getUriForFile(
             context!!,
-            context!!.packageName + ".fileprovider",
+            context!!.packageName + ".socialshare.fileprovider",
             file
         )
 
@@ -115,6 +112,8 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
             result.success(null)
         } catch (e: ActivityNotFoundException) {
             result.error("APP_NOT_FOUND", "App not installed: $packageName", null)
+        } catch (e: Exception) {
+            result.error("SHARE_FAILED", "Failed to share image: ${e.message}", null)
         }
     }
 
@@ -141,7 +140,7 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
 
                 val uri = FileProvider.getUriForFile(
                     context!!,
-                    context!!.packageName + ".fileprovider",
+                    context!!.packageName + ".socialshare.fileprovider",
                     file
                 )
                 putExtra(Intent.EXTRA_STREAM, uri)
@@ -157,7 +156,7 @@ class SocialSharePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Activi
         }
     }
 
-    fun checkInstalledApps(result: MethodChannel.Result) {
+    private fun checkInstalledApps(result: MethodChannel.Result) {
         val packageManager = activity!!.packageManager
 
         val apps = mapOf(
