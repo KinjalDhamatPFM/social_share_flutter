@@ -72,8 +72,7 @@ public class SocialSharePlugin: NSObject, FlutterPlugin {
           let imageData = try Data(contentsOf: imageURL)
           var pasteboardItems: [String: Any] = [
               "com.instagram.sharedSticker.stickerImage": imageData,
-              "com.instagram.sharedSticker.backgroundTopColor": "#636e72",
-              "com.instagram.sharedSticker.backgroundBottomColor": "#b2bec3"
+              "com.instagram.sharedSticker.appID": appId,
           ]
 
           if let contentUrl = text {
